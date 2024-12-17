@@ -13,6 +13,13 @@ async function bootstrap() {
 
 	const config = app.get(Config);
 
+	if (config.server.cors) {
+		app.enableCors();
+	}
+
+	// uncomment to set global prefix for controllers (doesn't apply to static files and openapi)
+	// app.setGlobalPrefix("api");
+
 	app.useGlobalPipes(
 		new ValidationPipe({
 			whitelist: true,
