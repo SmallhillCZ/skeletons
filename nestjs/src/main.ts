@@ -1,30 +1,44 @@
-import { Logger, ValidationPipe } from "@nestjs/common";
+import { Logger, NestApplicationOptions, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { AppModule } from "./app.module";
-import { Config } from "./config";
+import { Config, StaticConfig } from "./config";
+import { runMigrations } from "./database/run-migrations";
 import { registerOpenAPI } from "./openapi";
 import { registerTemplating } from "./templating";
 
 async function bootstrap() {
 	const logger = new Logger("MAIN");
 
-	const app = await NestFactory.create<NestExpressApplication>(AppModule);
+	if (StaticConfig.environment === "production") {
+		await runMigrations(StaticConfig);
+	}
+
+	const nestOptions: NestApplicationOptions = {
+		logger:
+			StaticConfig.logging.debug || StaticConfig.environment === "development"
+				? ["log", "error", "warn", "debug", "verbose"]
+				: ["log", "error", "warn"],
+	};
+
+	const app = await NestFactory.create<NestExpressApplication>(AppModule, nestOptions);
 
 	const config = app.get(Config);
+
+	if (config.server.globalPrefix) {
+		app.setGlobalPrefix(config.server.globalPrefix);
+	}
 
 	if (config.server.cors) {
 		app.enableCors();
 	}
-
-	// uncomment to set global prefix for controllers (doesn't apply to static files and openapi)
-	// app.setGlobalPrefix("api");
 
 	app.useGlobalPipes(
 		new ValidationPipe({
 			whitelist: true,
 			forbidNonWhitelisted: true,
 			transform: true,
+			transformOptions: { enableImplicitConversion: true },
 		}),
 	);
 
