@@ -1,0 +1,23 @@
+name: XXX-dev
+
+services:
+    devcontainer:
+        image: mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm
+        command: sleep infinity
+        # environment:
+        #   DB_HOST: postgres
+        #   DB_USER: postgres
+        #   DB_PASSWORD: password
+        #   DB_DATABASE: postgres
+
+    # postgres:
+    #   image: postgres:16
+    #   environment:
+    #     POSTGRES_PASSWORD: password
+
+    # pgweb:
+    #   image: sosedoff/pgweb
+    #   environment:
+    #     - PGWEB_DATABASE_URL=postgres://postgres:password@postgres:5432/postgres?sslmode=disable
+    #   depends_on:
+    #     - postgres
