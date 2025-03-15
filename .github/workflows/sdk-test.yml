@@ -1,10 +1,11 @@
 name: Test
 
 on:
-  branch:
-    master
-  paths:
-    - "sdk/**"
+  push:
+    branches:
+      - master
+    paths:
+      - "sdk/**"
 
 jobs:
   test:
