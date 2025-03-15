@@ -1,0 +1,76 @@
+{{#allParams}}
+{{#isEnum}}
+{{#stringEnums}}
+/**
+  * @export
+  * @enum {string}
+  */
+export enum {{operationIdCamelCase}}{{enumName}} {
+{{#allowableValues}}
+    {{#enumVars}}
+    {{{name}}} = {{{value}}}{{^-last}},{{/-last}}
+    {{/enumVars}}
+{{/allowableValues}}
+}
+{{/stringEnums}}
+{{^stringEnums}}
+/**
+ * @export
+ */
+export const {{operationIdCamelCase}}{{enumName}} = {
+{{#allowableValues}}
+    {{#enumVars}}
+    {{{name}}}: {{{value}}}{{^-last}},{{/-last}}
+    {{/enumVars}}
+{{/allowableValues}}
+} as const;
+export type {{operationIdCamelCase}}{{enumName}} = typeof {{operationIdCamelCase}}{{enumName}}[keyof typeof {{operationIdCamelCase}}{{enumName}}];
+{{/stringEnums}}
+{{/isEnum}}
+{{/allParams}}
+
+
+{{#queryParams.0}}
+/**
+ * Query parameters for {{nickname}} operation in {{classname}}.
+ * @export
+ * @interface {{classname}}{{operationIdCamelCase}}QueryParams
+ */
+export interface {{classname}}{{operationIdCamelCase}}QueryParams {
+    {{#queryParams}}
+    //{{paramName}}{{#isEnum}}isEnum{{/isEnum}}{{enumName}}
+    /**
+     * {{description}}
+     * @type {{=<% %>=}}{<%&dataType%>}<%={{ }}=%>
+     * @memberof {{classname}}{{operationIdCamelCase}}
+     */
+    {{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{#isArray}}Array<{{operationIdCamelCase}}{{{enumName}}}>{{/isArray}}{{^isArray}}{{operationIdCamelCase}}{{{enumName}}}{{/isArray}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}
+    {{^-last}}
+
+    {{/-last}}
+    {{/queryParams}}
+}
+
+{{/queryParams.0}}
+
+{{#headerParams.0}}
+/**
+ * Header parameters for {{nickname}} operation in {{classname}}.
+ * @export
+ * @interface {{classname}}{{operationIdCamelCase}}HeaderParams
+ */
+export interface {{classname}}{{operationIdCamelCase}}HeaderParams {
+    {{#headerParams}}
+    /**
+     * {{description}}
+     * @type {{=<% %>=}}{<%&dataType%>}<%={{ }}=%>
+     * @memberof {{classname}}{{operationIdCamelCase}}
+     */
+    {{paramName}}{{^required}}?{{/required}}: {{#isEnum}}{{operationIdCamelCase}}{{{enumName}}}{{/isEnum}}{{^isEnum}}{{{dataType}}}{{#isNullable}} | null{{/isNullable}}{{/isEnum}}
+    {{^-last}}
+
+    {{/-last}}
+    {{/headerParams}}
+}
+
+{{/headerParams.0}}

@@ -1,0 +1,6 @@
+.github
+node_modules
+tests
+tsconfig.json
+vitest*
+openapitools.json

@@ -1,0 +1,120 @@
+{
+  "openapi": "3.0.0",
+  "components": {
+    "schemas": {
+      "TestResponse": {
+        "type": "object",
+        "properties": {
+          "test_property": {
+            "type": "number"
+          },
+          "test_enum_property": {
+            "type": "string",
+            "enum": [
+              "test",
+              "test2"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/test": {
+      "get": {
+        "operationId": "test",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Test"
+        ]
+      }
+    },
+    "/api/test-param/{id}": {
+      "get": {
+        "operationId": "test-param",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Test"
+        ]
+      }
+    },
+    "/api/test-query": {
+      "get": {
+        "operationId": "test-query",
+        "parameters": [
+          {
+            "name": "test_key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "test_enum_key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "test",
+              "enum": [
+                "test",
+                "test2"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Test"
+        ]
+      }
+    }
+  }
+}
