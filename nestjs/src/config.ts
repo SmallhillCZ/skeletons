@@ -24,8 +24,10 @@ export class Config {
 	};
 
 	app = {
-		name: this.packageJson.name,
+		name: this.packageJson.displayName || this.packageJson.name,
+		description: this.packageJson.description,
 		version: this.packageJson.version,
+		repoUrl: this.packageJson.repository?.url.replace("git+", ""),
 		baseUrl: this.getBaseUrl(),
 	};
 

@@ -11,6 +11,8 @@ export function generateOpenAPI(path: string, app: INestApplication, config: Con
 	const builder = new DocumentBuilder()
 		.setTitle(config.app.name)
 		.setVersion(config.app.version)
+		.setDescription(config.app.description)
+		.setExternalDoc("Open project repository", config.app.repoUrl)
 		.addServer(config.app.baseUrl)
 		.build();
 
