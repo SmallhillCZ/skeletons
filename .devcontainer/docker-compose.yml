@@ -2,7 +2,7 @@ name: xxx-dev
 
 services:
     devcontainer:
-        image: mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm
+        build: ./Dockerfile
         command: sleep infinity
         # environment:
         #   DB_HOST: postgres
