@@ -2,7 +2,7 @@ name: xxx-dev
 
 services:
     devcontainer:
-        build: ./Dockerfile
+        build: .
         command: sleep infinity
         # environment:
         #   DB_HOST: postgres
