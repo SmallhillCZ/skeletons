@@ -5,6 +5,9 @@ on:
     branches:
       - release
 
+concurrency:
+    group: deploy-${{ github.ref }}
+
 jobs:
   build:
     name: Publish
