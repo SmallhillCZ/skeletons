@@ -1,0 +1,19 @@
+{
+    "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+    "spaces": 2,
+    "generator-cli": {
+        "version": "6.6.0",
+        "generators": {
+            "axios-test": {
+                "skipValidateSpec": true,
+                "generatorName": "typescript-axios",
+                "output": "./tests/sdk",
+                "inputSpec": "./tests/openapi.json",
+                "templateDir": "./templates",
+                "additionalProperties": {
+                    "npmName": "TestSdk"
+                }
+            }
+        }
+    }
+}
