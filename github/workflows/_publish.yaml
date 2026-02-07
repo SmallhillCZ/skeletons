@@ -1,0 +1,33 @@
+name: Publish
+
+on:
+    workflow_call:
+        inputs:
+            tag:
+                description: "Push under this tag"
+                type: string
+            version:
+                description: "Version to tag"
+                type: string
+                default: false
+
+jobs:
+    # Add your apps or services here. Example:
+    #
+    # publish-app:
+    #     name: Publish App
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - name: Checkout the updated source code
+    #           uses: actions/checkout@v4
+
+    #         - name: Publish Docker image
+    #           uses: ./.github/actions/publish-docker-image
+    #           with:
+    #               target: app
+    #               publish-name: XXX/XXX
+    #               registry: ghcr.io
+    #               tag: ${{ inputs.tag }}
+    #               version-tags: ${{ inputs.version-tags }}
+    #               username: ${{ github.actor }}
+    #               password: ${{ secrets.GITHUB_TOKEN }}

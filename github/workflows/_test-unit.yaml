@@ -1,0 +1,12 @@
+name: Unit tests
+
+on:
+    workflow_call:
+
+jobs:
+    tests-not-implemented:
+        name: Tests not implemented
+        runs-on: ubuntu-latest
+        steps:
+            - name: No tests implemented
+              run: echo "No unit tests implemented yet"
