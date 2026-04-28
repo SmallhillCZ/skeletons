@@ -1,33 +1,54 @@
 name: Publish
 
 on:
-    workflow_call:
-        inputs:
-            tag:
-                description: "Push under this tag"
-                type: string
-            version:
-                description: "Version to tag"
-                type: string
-                default: false
+  workflow_call:
+    inputs:
+      tag:
+        description: "Push under this tag"
+        type: string
+        required: false
+      version:
+        description: "Version to use for the built Docker images"
+        type: string
+        required: false
 
 jobs:
-    # Add your apps or services here. Example:
-    #
-    # publish-app:
-    #     name: Publish App
-    #     runs-on: ubuntu-latest
-    #     steps:
-    #         - name: Checkout the updated source code
-    #           uses: actions/checkout@v4
+  publish:
+    name: Publish ${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { target: my-build-target, publish-name: ghcr.io/smallhillcz/my-image-name }
+    steps:
+      - name: Checkout the updated source code
+        uses: actions/checkout@v6
 
-    #         - name: Publish Docker image
-    #           uses: ./.github/actions/publish-docker-image
-    #           with:
-    #               target: app
-    #               publish-name: XXX/XXX
-    #               registry: ghcr.io
-    #               tag: ${{ inputs.tag }}
-    #               version-tags: ${{ inputs.version-tags }}
-    #               username: ${{ github.actor }}
-    #               password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Login to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download Docker image tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.target }}-docker-image
+
+      - name: Load Docker image from tarball
+        run: |
+          docker load -i ${{ matrix.target }}-docker-image.tar
+          rm ${{ matrix.target }}-docker-image.tar
+
+      - name: Push ${{ inputs.tag }} tag to the container registry
+        if: inputs.tag != ''
+        run: |
+          docker tag ${{ matrix.target }}:${{ github.sha }} ${{ matrix.publish-name }}:${{ inputs.tag }}
+          docker push ${{ matrix.publish-name }}:${{ inputs.tag }}
+
+      - name: Push version tag to the container registry
+        if: inputs.version != ''
+        run: |
+          docker tag ${{ matrix.target }}:${{ github.sha }} ${{ matrix.publish-name }}:${{ inputs.version }}
+          docker push ${{ matrix.publish-name }}:${{ inputs.version }}
