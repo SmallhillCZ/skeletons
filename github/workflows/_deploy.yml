@@ -20,6 +20,7 @@ jobs:
           WATCHTOWER_TOKEN: ${{ vars.WATCHTOWER_TOKEN }}
         run: |
           response=$(curl --fail --header "Authorization: Bearer $WATCHTOWER_TOKEN" $WATCHTOWER_URL)
+          echo "$response"
           echo "response=$response" >> $GITHUB_OUTPUT
 
       - name: Generate job summary
