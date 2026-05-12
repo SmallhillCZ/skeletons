@@ -26,7 +26,7 @@ concurrency:
 jobs:
   version:
     name: Resolve version
-    uses: ./.github/workflows/version.yml
+    uses: ./.github/workflows/_version.yaml
     with:
       semver: ${{ github.event.inputs.semver }}
       # prerelease: ${{ github.event.inputs.prerelease }}
@@ -34,7 +34,7 @@ jobs:
   tag:
     name: Tag
     needs: version
-    uses: ./.github/workflows/tag.yml
+    uses: ./.github/workflows/_tag.yaml
     with:
       tag: PRODUCTION
-      version: ${{ needs.version.outputs.new_tag }}
+      version: ${{ needs.version.outputs.version }}

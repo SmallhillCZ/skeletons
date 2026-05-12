@@ -11,6 +11,10 @@ on:
         description: "Version to use for the built Docker images"
         type: string
         required: false
+    outputs:
+      images:
+        description: "Published image tags"
+        value: ${{ jobs.collect.outputs.images }}
 
 jobs:
   publish:
@@ -19,7 +23,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - { target: my-build-target, publish-name: ghcr.io/smallhillcz/my-image-name }
+          # - { target: my-targey, publish-name: ghcr.io/smallhillcz/my-image }
+    outputs:
+      images: ${{ steps.publish.outputs.images }}
     steps:
       - name: Checkout the updated source code
         uses: actions/checkout@v6
@@ -41,14 +47,74 @@ jobs:
           docker load -i ${{ matrix.target }}-docker-image.tar
           rm ${{ matrix.target }}-docker-image.tar
 
-      - name: Push ${{ inputs.tag }} tag to the container registry
-        if: inputs.tag != ''
+      - name: Push tags to the container registry
+        id: publish
         run: |
-          docker tag ${{ matrix.target }}:${{ github.sha }} ${{ matrix.publish-name }}:${{ inputs.tag }}
-          docker push ${{ matrix.publish-name }}:${{ inputs.tag }}
+          images=()
+          if [ -n "${{ inputs.tag }}" ]; then
+            docker tag ${{ matrix.target }}:${{ github.sha }} ${{ matrix.publish-name }}:${{ inputs.tag }}
+            docker push ${{ matrix.publish-name }}:${{ inputs.tag }}
+            images+=("${{ matrix.publish-name }}:${{ inputs.tag }}")
+          fi
+          if [ -n "${{ inputs.version }}" ]; then
+            version="${{ inputs.version }}"
+            tags=()
+            if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+              tags+=("${BASH_REMATCH[1]}")
+              tags+=("${BASH_REMATCH[1]}.${BASH_REMATCH[2]}")
+              tags+=("$version")
+            else
+              tags+=("$version")
+            fi
+            for tag in "${tags[@]}"; do
+              docker tag ${{ matrix.target }}:${{ github.sha }} ${{ matrix.publish-name }}:"$tag"
+              docker push ${{ matrix.publish-name }}:"$tag"
+              images+=("${{ matrix.publish-name }}:$tag")
+            done
+          fi
+          IFS=,
+          echo "images=${images[*]}" >> "$GITHUB_OUTPUT"
 
-      - name: Push version tag to the container registry
-        if: inputs.version != ''
+      - name: Save published images for aggregation
+        if: steps.publish.outputs.images != ''
         run: |
-          docker tag ${{ matrix.target }}:${{ github.sha }} ${{ matrix.publish-name }}:${{ inputs.version }}
-          docker push ${{ matrix.publish-name }}:${{ inputs.version }}
+          mkdir -p published-images
+          echo "${{ steps.publish.outputs.images }}" > "published-images/${{ matrix.target }}.txt"
+
+      - name: Upload published images artifact
+        if: steps.publish.outputs.images != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-images-${{ matrix.target }}
+          path: published-images/${{ matrix.target }}.txt
+          if-no-files-found: ignore
+
+  collect:
+    name: Collect published images
+    needs: publish
+    runs-on: ubuntu-latest
+    outputs:
+      images: ${{ steps.join.outputs.images }}
+    steps:
+      - name: Download all published image lists
+        uses: actions/download-artifact@v4
+        with:
+          path: published-images
+          pattern: published-images-*
+          merge-multiple: true
+
+      - name: Join image tags into a single comma-separated list
+        id: join
+        run: |
+          if [ -d published-images ] && compgen -G "published-images/*.txt" > /dev/null; then
+            images=$(cat published-images/*.txt | paste -sd, -)
+          else
+            images=""
+          fi
+          echo "images=$images" >> "$GITHUB_OUTPUT"
+
+      - name: Delete published image artifacts
+        uses: geekyeggo/delete-artifact@f275313e70c08f6120db482d7a6b98377786765b # v5.1.0
+        with:
+          name: published-images-*
+          failOnError: false

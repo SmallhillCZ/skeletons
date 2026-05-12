@@ -15,4 +15,5 @@ jobs:
         with:
           name: |
             *-docker-image
+            published-images-*
           failOnError: false

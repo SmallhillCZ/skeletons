@@ -14,17 +14,16 @@ on:
         required: false
         default: false
     outputs:
-      new_tag:
+      version:
         description: "Resolved version tag"
-        value: ${{ jobs.version.outputs.new_tag }}
+        value: ${{ jobs.version.outputs.version }}
 
 jobs:
   version:
     name: Resolve version tag
     runs-on: ubuntu-latest
     outputs:
-      new_tag: ${{ steps.version.outputs.new_tag }}
-      old_tag: ${{ steps.version.outputs.old_tag }}
+      version: ${{ steps.version.outputs.new_tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
