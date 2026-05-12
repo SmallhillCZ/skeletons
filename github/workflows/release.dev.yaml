@@ -44,7 +44,7 @@ jobs:
       - test-e2e
     uses: ./.github/workflows/_publish.yaml
     with:
-      tag: latest
+      tag: dev
     secrets: inherit
 
   deploy:
