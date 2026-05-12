@@ -23,7 +23,7 @@ jobs:
     strategy:
       matrix:
         include:
-          # - { target: my-targey, publish-name: ghcr.io/smallhillcz/my-image }
+          - { target: my-targey, publish-name: ghcr.io/smallhillcz/my-image }
     outputs:
       images: ${{ steps.publish.outputs.images }}
     steps:

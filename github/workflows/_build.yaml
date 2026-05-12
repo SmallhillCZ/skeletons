@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         target:
-          # - my-target
+          - my-target
     steps:
       - name: Checkout the updated source code
         uses: actions/checkout@v6
