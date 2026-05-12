@@ -17,7 +17,7 @@ jobs:
         id: watchtower-update
         env:
           WATCHTOWER_URL: ${{ vars.WATCHTOWER_URL }}?image=${{ inputs.images }}
-          WATCHTOWER_TOKEN: ${{ vars.WATCHTOWER_TOKEN }}
+          WATCHTOWER_TOKEN: ${{ secrets.WATCHTOWER_TOKEN }}
         run: |
           response=$(curl --request POST --fail --header "Authorization: Bearer $WATCHTOWER_TOKEN" $WATCHTOWER_URL)
           echo "$response"

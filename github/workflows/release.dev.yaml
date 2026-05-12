@@ -54,6 +54,7 @@ jobs:
     uses: ./.github/workflows/_deploy.yml
     with:
       images: ${{ needs.publish.outputs.images }}
+    secrets: inherit
 
   tag:
     name: Tag
