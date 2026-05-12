@@ -26,6 +26,7 @@ jobs:
       - name: Build image
         uses: docker/build-push-action@v7
         with:
+          context: .
           target: ${{ matrix.target }}
           tags: ${{ matrix.target }}:${{ github.sha }}
           outputs: type=docker,dest=${{ runner.temp }}/${{ matrix.target }}-docker-image.tar
