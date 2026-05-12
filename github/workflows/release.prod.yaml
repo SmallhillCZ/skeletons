@@ -72,7 +72,7 @@ jobs:
     uses: ./.github/workflows/_tag.yaml
     with:
       tag: PRODUCTION
-      version: ${{ needs.version.outputs.version }}
+      version: ${{ github.event.inputs.semver != 'none' && needs.version.outputs.version || '' }}
 
   cleanup:
     name: Cleanup artifacts
