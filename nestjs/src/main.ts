@@ -46,10 +46,12 @@ async function bootstrap() {
 	registerTemplating(app);
 
 	// comment to disable OpenAPI and Swagger
-	registerOpenAPI("api", app, config);
+	const swaggerPath = config.server.globalPrefix ?? "api";
+	registerOpenAPI(swaggerPath, app, config);
 
 	await app.listen(config.server.port, config.server.host);
 
 	logger.log(`Server running on http://${config.server.host}:${config.server.port}`);
+	logger.log(`Swagger UI available at ${config.app.baseUrl}/${swaggerPath}`);
 }
 bootstrap();
