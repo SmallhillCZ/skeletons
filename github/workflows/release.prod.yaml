@@ -24,7 +24,6 @@ jobs:
     uses: ./.github/workflows/_version.yaml
     with:
       semver: ${{ github.event.inputs.semver }}
-      prerelease: false
 
   build:
     name: Build
