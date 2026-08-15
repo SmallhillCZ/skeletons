@@ -3,29 +3,19 @@ name: Publish
 on:
   workflow_call:
     inputs:
-      tag:
-        description: "Push under this tag"
+      image:
+        description: "Image reference to push"
         type: string
-        required: false
-      version:
-        description: "Version to use for the built Docker images"
+        required: true
+      target:
+        description: "Dockerfile stage that was built"
         type: string
-        required: false
-    outputs:
-      images:
-        description: "Published image tags"
-        value: ${{ jobs.collect.outputs.images }}
+        required: true
 
 jobs:
   publish:
-    name: Publish ${{ matrix.target }}
+    name: Publish ${{ inputs.target }}
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - { target: my-targey, publish-name: ghcr.io/smallhillcz/my-image }
-    outputs:
-      images: ${{ steps.publish.outputs.images }}
     steps:
       - name: Checkout the updated source code
         uses: actions/checkout@v6
@@ -40,81 +30,14 @@ jobs:
       - name: Download Docker image tarball
         uses: actions/download-artifact@v8
         with:
-          name: ${{ matrix.target }}-docker-image
+          name: ${{ inputs.target }}-docker-image
 
       - name: Load Docker image from tarball
         run: |
-          docker load -i ${{ matrix.target }}-docker-image.tar
-          rm ${{ matrix.target }}-docker-image.tar
+          docker load -i ${{ inputs.target }}-docker-image.tar
+          rm ${{ inputs.target }}-docker-image.tar
 
-      - name: Push tags to the container registry
-        id: publish
+      - name: Push image to the container registry
         run: |
-          images=()
-          if [ -n "${{ inputs.tag }}" ]; then
-            docker tag ${{ matrix.target }}:${{ github.sha }} ${{ matrix.publish-name }}:${{ inputs.tag }}
-            docker push ${{ matrix.publish-name }}:${{ inputs.tag }}
-            images+=("${{ matrix.publish-name }}:${{ inputs.tag }}")
-          fi
-          if [ -n "${{ inputs.version }}" ]; then
-            version="${{ inputs.version }}"
-            tags=()
-            if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-              tags+=("${BASH_REMATCH[1]}")
-              tags+=("${BASH_REMATCH[1]}.${BASH_REMATCH[2]}")
-              tags+=("$version")
-            else
-              tags+=("$version")
-            fi
-            for tag in "${tags[@]}"; do
-              docker tag ${{ matrix.target }}:${{ github.sha }} ${{ matrix.publish-name }}:"$tag"
-              docker push ${{ matrix.publish-name }}:"$tag"
-              images+=("${{ matrix.publish-name }}:$tag")
-            done
-          fi
-          IFS=,
-          echo "images=${images[*]}" >> "$GITHUB_OUTPUT"
-
-      - name: Save published images for aggregation
-        if: steps.publish.outputs.images != ''
-        run: |
-          mkdir -p published-images
-          echo "${{ steps.publish.outputs.images }}" > "published-images/${{ matrix.target }}.txt"
-
-      - name: Upload published images artifact
-        if: steps.publish.outputs.images != ''
-        uses: actions/upload-artifact@v7
-        with:
-          name: published-images-${{ matrix.target }}
-          path: published-images/${{ matrix.target }}.txt
-          if-no-files-found: ignore
-
-  collect:
-    name: Collect published images
-    needs: publish
-    runs-on: ubuntu-latest
-    outputs:
-      images: ${{ steps.join.outputs.images }}
-    steps:
-      - name: Download all published image lists
-        uses: actions/download-artifact@v8
-        with:
-          path: published-images
-          pattern: published-images-*
-          merge-multiple: true
-
-      - name: Join image tags into a single comma-separated list
-        id: join
-        run: |
-          if [ -d published-images ] && compgen -G "published-images/*.txt" > /dev/null; then
-            images=$(cat published-images/*.txt | paste -sd, -)
-          else
-            images=""
-          fi
-          echo "images=$images" >> "$GITHUB_OUTPUT"
-
-      - name: Delete published image artifacts
-        uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
-        with:
-          name: published-images-*
-          failOnError: false
+          docker tag ${{ inputs.target }}:${{ github.sha }} ${{ inputs.image }}
+          docker push ${{ inputs.image }}

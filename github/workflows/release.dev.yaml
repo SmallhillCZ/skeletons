@@ -28,6 +28,7 @@ jobs:
       - version
     uses: ./.github/workflows/_build.yaml
     with:
+      target: my-target
       version: DEV-${{ needs.version.outputs.version }}
 
   test-e2e:
@@ -44,7 +45,8 @@ jobs:
       - test-e2e
     uses: ./.github/workflows/_publish.yaml
     with:
-      tag: dev
+      image: ghcr.io/smallhillcz/my-image:dev
+      target: my-target
     secrets: inherit
 
   deploy:
@@ -53,7 +55,7 @@ jobs:
       - publish
     uses: ./.github/workflows/_deploy.yml
     with:
-      images: ${{ needs.publish.outputs.images }}
+      images: ghcr.io/smallhillcz/my-image:dev
     secrets: inherit
 
   tag:
