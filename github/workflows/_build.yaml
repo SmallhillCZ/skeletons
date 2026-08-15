@@ -3,6 +3,14 @@ name: Build
 on:
   workflow_call:
     inputs:
+      image:
+        description: "Image reference to build and push"
+        type: string
+        required: true
+      target:
+        description: "Dockerfile stage to build"
+        type: string
+        required: true
       version:
         description: "Version to use for the built Docker images"
         type: string
@@ -10,12 +18,11 @@ on:
 
 jobs:
   build:
-    name: Build ${{ matrix.target }}
+    name: Build and publish ${{ inputs.target }}
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target:
-          - my-target
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout the updated source code
         uses: actions/checkout@v6
@@ -23,20 +30,20 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
-      - name: Build image
+      - name: Login to container registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
         uses: docker/build-push-action@v7
         with:
           context: .
-          target: ${{ matrix.target }}
-          tags: ${{ matrix.target }}:${{ github.sha }}
-          outputs: type=docker,dest=${{ runner.temp }}/${{ matrix.target }}-docker-image.tar
-          cache-from: type=gha,scope=${{ matrix.target }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.target }}
+          target: ${{ inputs.target }}
+          tags: ${{ inputs.image }}
+          push: true
+          cache-from: type=gha,scope=${{ inputs.target }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.target }}
           build-args: VERSION=${{ inputs.version }}
-
-      - name: Upload Docker image tarball
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ matrix.target }}-docker-image
-          path: ${{ runner.temp }}/${{ matrix.target }}-docker-image.tar
-          retention-days: 1
