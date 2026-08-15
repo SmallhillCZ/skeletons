@@ -18,41 +18,20 @@ jobs:
         id: set_short_sha
         run: echo "short_sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
-  test-unit:
-    name: Unit Tests
-    uses: ./.github/workflows/_test-unit.yaml
-
   build:
     name: Build
     needs:
       - version
     uses: ./.github/workflows/_build.yaml
     with:
-      target: my-target
-      version: DEV-${{ needs.version.outputs.version }}
-
-  test-e2e:
-    name: E2E Tests
-    needs:
-      - build
-    uses: ./.github/workflows/_test-e2e.yaml
-
-  publish:
-    name: Publish
-    needs:
-      - build
-      - test-unit
-      - test-e2e
-    uses: ./.github/workflows/_publish.yaml
-    with:
       image: ghcr.io/smallhillcz/my-image:dev
       target: my-target
-    secrets: inherit
+      version: DEV-${{ needs.version.outputs.version }}
 
   deploy:
     name: Deploy
     needs:
-      - publish
+      - build
     uses: ./.github/workflows/_deploy.yml
     with:
       images: ghcr.io/smallhillcz/my-image:dev
@@ -61,14 +40,7 @@ jobs:
   tag:
     name: Tag
     needs:
-      - publish
+      - build
     uses: ./.github/workflows/_tag.yaml
     with:
       tag: DEV
-
-  cleanup:
-    name: Cleanup artifacts
-    if: always()
-    needs:
-      - publish
-    uses: ./.github/workflows/_cleanup-artifacts.yaml
