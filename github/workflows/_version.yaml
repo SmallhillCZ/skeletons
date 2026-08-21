@@ -44,6 +44,22 @@ jobs:
           RELEASE_BRANCHES: no_release_branches_exist # otherwise prerelease is not generated for main branch
 
       - name: Print resolved tags
+        env:
+          NEW_TAG: ${{ steps.version.outputs.new_tag }}
+          OLD_TAG: ${{ steps.version.outputs.old_tag }}
+          BUMP: ${{ inputs.semver }}
+          PRERELEASE: ${{ inputs.prerelease }}
         run: |
-          echo "New tag: ${{ steps.version.outputs.new_tag }}"
-          echo "Old tag: ${{ steps.version.outputs.old_tag }}"
+          echo "New tag: $NEW_TAG"
+          echo "Old tag: $OLD_TAG"
+          {
+            echo "## Resolved version"
+            echo
+            echo "### \`$NEW_TAG\`"
+            echo
+            echo "| | |"
+            echo "| --- | --- |"
+            echo "| Previous tag | \`$OLD_TAG\` |"
+            echo "| Bump | \`$BUMP\` |"
+            echo "| Prerelease | \`$PRERELEASE\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
