@@ -32,7 +32,7 @@ jobs:
 
       - name: Resolve version tag
         id: version
-        uses: anothrNick/github-tag-action@1.75.0
+        uses: anothrNick/github-tag-action@4ed44965e0db8dab2b466a16da04aec3cc312fd8 # 1.75.0
         env:
           TAG_PREFIX: v
           PRERELEASE: ${{ inputs.prerelease }}
