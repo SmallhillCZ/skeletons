@@ -35,6 +35,14 @@ jobs:
       target: my-target
       version: ${{ needs.version.outputs.version }}
 
+  cleanup:
+    name: Clean up
+    needs:
+      - build
+    uses: ./.github/workflows/_cleanup.yaml
+    with:
+      package: my-image
+
   deploy:
     name: Deploy
     needs:
