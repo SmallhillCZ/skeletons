@@ -17,9 +17,17 @@ has wire-compatible clients for Node (`bullmq`, `@nestjs/bullmq`) and Python (`b
 | -------------- | ------------------------ | ------------------------------------------------ |
 | `REDIS_URL`    | `redis://127.0.0.1:6379` | Redis shared with the backend                    |
 | `WORKER_TASKS` | `*`                      | Comma-separated task names this instance handles |
+| `WORKER_NAME`  | hostname                 | Id in the heartbeat                              |
 
-Tuning constants live in `worker/config.py`. `worker/cpus.py` reads the container's CPU limit (compose
-`cpus:`, cgroup v1/v2) so native libraries can size their thread pools to it.
+Tuning constants live in `worker/config.py`. `worker/resources.py` reads the container's CPU and memory
+limits (compose `cpus:` / `mem_limit`, cgroup v1/v2) so native libraries can size their thread pools to them.
+
+## Heartbeat
+
+Every 10 s the worker writes `worker-heartbeat:<id>` to Redis (JSON, 30 s TTL, deleted on shutdown):
+`status` (`idle`/`busy`), `current` job, accepted `tasks`, `cpus`/`cpuLimit`, `memoryLimit`/`memoryUsage`,
+`processed`/`failed` counters and timestamps. The backend lists live workers with `SCAN worker-heartbeat:*`
+and treats an entry older than ~25 s as not responding.
 
 ## Adding a task
 
@@ -42,5 +50,7 @@ worker:
   environment:
     REDIS_URL: redis://redis:6379
     WORKER_TASKS: example
+    WORKER_NAME: worker-1
   cpus: 2
+  mem_limit: 1g
 ```
