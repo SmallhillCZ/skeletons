@@ -21,11 +21,17 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      OWNER_PATH: ${{ github.event.repository.owner.type == 'User' && 'users' || 'orgs' }}/${{ github.repository_owner }}
+      PACKAGE: ${{ inputs.package }}
     steps:
       - name: Delete untagged image versions
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: ${{ inputs.package }}
-          package-type: container
-          delete-only-untagged-versions: "true"
-          min-versions-to-keep: 0
+        run: |
+          base="/$OWNER_PATH/packages/container/$PACKAGE/versions"
+          ids=$(gh api --paginate "$base?per_page=100" --jq '.[] | select(.metadata.container.tags | length == 0) | .id')
+          echo "Deleting $(echo -n "$ids" | grep -c . || true) untagged versions"
+          for id in $ids; do
+            gh api --method DELETE "$base/$id" --silent
+            sleep 1
+          done
